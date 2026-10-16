@@ -1,0 +1,31 @@
+name: 语法检查
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  syntax:
+    name: 检查 Bash 与 Node.js 语法
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 检查 Shell 脚本
+        run: bash -n mac-credits.sh
+
+      - name: 检查内嵌 JavaScript
+        shell: bash
+        run: |
+          sed -n "/<<'JS'$/,/^JS$/p" mac-credits.sh | sed '1d;$d' > /tmp/mac-credits.js
+          test -s /tmp/mac-credits.js
+          node --check /tmp/mac-credits.js
+
+      - name: 测试定时签到时间参数
+        run: bash tests/test-schedule.sh
